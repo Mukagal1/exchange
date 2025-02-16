@@ -1,0 +1,80 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-3 text-primary fw-bold">📦 Мои вещи</h2>
+
+    <!-- Кнопка "Добавить вещь" -->
+    <div class="text-end mb-4">
+        <a href="{% url 'additem' %}" class="btn btn-primary px-4 py-2 fw-bold shadow">
+            ➕ Добавить вещь
+        </a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
+        {% if items %}
+            {% for item in items %}
+            <div class="col">
+                <div class="card shadow-lg border-0 rounded-4 h-100">
+                    <!-- Фото (как в marketplace) -->
+                    <div class="img-container">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" class="card-img-top">
+                        {% else %}
+                            <img src="https://via.placeholder.com/300x200?text=Нет+Фото" class="card-img-top">
+                        {% endif %}
+                    </div>
+
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title fw-bold">{{ item.name }}</h5>
+                        <p class="card-text text-muted flex-grow-1">
+                            {{ item.description|truncatechars:80 }}
+                        </p>
+                        <p class="text-end">
+                            <small class="text-muted">📅 {{ item.created_at|date:"d.m.Y" }}</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="col-12 text-center">
+            <p class="text-muted fs-5">😞 У вас пока нет вещей</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Стили для фото и карточек (как в маркетплейсе) -->
+<style>
+    .card {
+        max-width: 320px; /* Широкие карточки */
+        min-height: 400px; /* Длинные карточки */
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .img-container {
+        width: 100%;
+        height: 220px; /* Фиксированная высота */
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+
+    .card-img-top {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Показывает всю картинку без обрезки */
+    }
+</style>
+
+{% endblock %}

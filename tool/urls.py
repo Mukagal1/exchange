@@ -17,10 +17,23 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.index, name='index'),
     path('login/', views.login_view, name='login'),
     path('signup/', views.signup, name='signup'),
     path('signout/', views.signout, name='signout'),
-]
+    path('main/', views.main_page, name='main_page'),
+    path('items/', views.place, name='place'),
+    path('items/<int:item_id>/', views.item_detail, name='item_detail'),
+    path('item/<int:item_id>/offer/', views.offer_exchange, name='offer_exchange'),
+    path('myitems/', views.my_items, name='myitems'),
+    path('additem/', views.add_item, name='additem'),
+    path('notifications/', views.notifications, name='notifications'),
+    path('notifications/read/', views.mark_notifications_as_read, name='mark_notifications_as_read'),
+    path('notifications/count/', views.unread_notifications_count, name='unread_notifications_count'),
+    path("notifications/accept/<int:request_id>/", views.accept_exchange, name="accept_exchange"),
+    path("notifications/reject/<int:request_id>/", views.decline_exchange, name="reject_exchange"),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

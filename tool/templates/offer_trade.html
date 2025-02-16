@@ -1,0 +1,59 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center text-primary fw-bold">🔄 Предложить обмен</h2>
+
+    <div class="card shadow-lg border-0 rounded-4 p-4 mt-4" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+        <h4 class="fw-bold text-dark">Вы предлагаете обмен на:</h4>
+        <p class="fw-semibold text-primary fs-5">{{ to_item.name }}</p>
+
+        <form method="POST" class="mt-3">
+            {% csrf_token %}
+            
+            <label class="fw-bold text-dark mb-2">Выберите свою вещь:</label>
+            <div class="form-group">
+                {{ form.from_item }}
+            </div>
+
+            <button type="submit" class="btn btn-gradient mt-4 px-5 py-2 fw-bold">
+                🚀 Отправить запрос
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Стилизация кнопки */
+    .btn-gradient {
+        background: linear-gradient(45deg, #28a745, #218838);
+        border: none;
+        color: white;
+        font-size: 18px;
+        transition: 0.3s;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-gradient:hover {
+        background: linear-gradient(45deg, #218838, #1e7e34);
+        box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Улучшение отображения select */
+    select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        background: #fff;
+        font-size: 16px;
+    }
+
+    select:focus {
+        border-color: #80bdff;
+        outline: none;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+</style>
+{% endblock %}

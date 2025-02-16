@@ -1,2 +1,38 @@
 from django.db import models
 from django.contrib.auth.models import User
+
+class Item(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="items")
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    image = models.ImageField(upload_to="items/", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class ExchangeRequest(models.Model):
+    from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_requests")
+    to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_requests")
+    from_item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="offered_requests")
+    to_item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="received_requests")
+    status = models.CharField(
+        max_length=10,
+        choices=[("pending", "Pending"), ("accepted", "Accepted"), ("declined", "Declined")],
+        default="pending"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.from_user} предлагает {self.to_user} обмен {self.from_item} на {self.to_item}"
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_notifications")
+    from_item = models.CharField(max_length=255)  # Название предмета отправителя
+    to_item = models.CharField(max_length=255)    # Название предмета получателя
+    is_read = models.BooleanField(default=False)  # Прочитано ли уведомление
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.sender.username} хочет обменять '{self.from_item}' на '{self.to_item}'"

@@ -1,0 +1,163 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">📢 Уведомления</h1>
+
+    {% if notifications %}
+        <div class="notification-list">
+            {% for request in notifications %}
+                <div class="card notification-card shadow-sm mb-3" data-id="{{ request.id }}">
+                    <div class="card-body">
+                        <h5 class="card-title">🔄 Обмен вещей</h5>
+
+                        <div class="d-flex align-items-center justify-content-center mt-3">
+                            <div class="text-center me-3">
+                                <img src="{{ request.to_item.image.url }}" alt="Ваша вещь" class="img-fluid rounded item-image">
+                                <p class="small mt-2 text-muted">{{ request.to_item.name }}</p>
+                            </div>
+
+                            <div class="mx-3 swap-icon">⇄</div>
+
+                            <div class="text-center ms-3">
+                                <img src="{{ request.from_item.image.url }}" alt="Предложенная вещь" class="img-fluid rounded item-image">
+                                <p class="small mt-2 text-muted">{{ request.from_item.name }}</p>
+                            </div>
+                        </div>
+
+                        <p class="text-muted mt-3 text-center">От <strong>{{ request.from_user.username }}</strong></p>
+
+                        <div class="d-flex justify-content-center mt-3">
+                            <button class="btn btn-success accept-btn me-2" data-id="{{ request.id }}">✅ Принять</button>
+                            <button class="btn btn-danger reject-btn" data-id="{{ request.id }}">❌ Отклонить</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted text-center">📭 У вас пока нет уведомлений.</p>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".accept-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                handleAction(this, "accept");
+            });
+        });
+
+        document.querySelectorAll(".reject-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                handleAction(this, "reject");
+            });
+        });
+
+        function handleAction(button, action) {
+            const requestId = button.getAttribute("data-id");
+            fetch(`/notifications/${action}/${requestId}/`, { 
+                method: "POST", 
+                headers: { 
+                    "X-CSRFToken": getCSRFToken(),
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin" // Чтобы передавались cookies (нужно для CSRF)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const card = button.closest(".notification-card");
+                    card.classList.add("fade-out");
+                    setTimeout(() => card.remove(), 300);
+                } else {
+                    alert("Ошибка: " + data.error);
+                }
+            });
+        }
+        
+
+        function getCSRFToken() {
+            return document.cookie.split('; ')
+                .find(row => row.startsWith('csrftoken='))
+                ?.split('=')[1];
+        }
+    });
+</script>
+
+<style>
+    .notification-list {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .notification-card {
+        width: 90%;
+        max-width: 900px;
+        border-radius: 12px;
+        transition: all 0.3s ease-in-out;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        min-height: 230px;
+        padding: 20px;
+    }
+
+    .notification-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .item-image {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 3px solid #dee2e6;
+    }
+
+    .swap-icon {
+        font-size: 2rem;
+        color: #6c757d;
+        font-weight: bold;
+    }
+
+    .fade-out {
+        opacity: 0;
+        transform: scale(0.95);
+        transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    }
+
+    .btn {
+        font-size: 16px;
+        font-weight: bold;
+        padding: 8px 20px;
+        border-radius: 8px;
+    }
+
+    .btn-success {
+        background: #28a745;
+        border: none;
+    }
+
+    .btn-success:hover {
+        background: #218838;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        border: none;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+    }
+
+    .text-muted {
+        font-size: 15px;
+    }
+</style>
+
+{% endblock %}

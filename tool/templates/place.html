@@ -4,6 +4,33 @@
 <div class="container mt-4">
     <h2 class="text-center mb-4 text-primary fw-bold">🛍 Площадка вещей</h2>
 
+    <!-- Форма фильтрации и поиска -->
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <input type="text" name="q" class="form-control" placeholder="🔍 Поиск по названию" value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-3">
+            <select name="category" class="form-select">
+                <option value="">Все категории</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+                    {{ cat.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="city" class="form-control" placeholder="🏙 Город" value="{{ request.GET.city }}">
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="country" class="form-control" placeholder="🌍 Страна" value="{{ request.GET.country }}">
+        </div>
+        <div class="col-md-12 text-end">
+            <button type="submit" class="btn btn-primary">Применить фильтры</button>
+            <a href="{% url 'place' %}" class="btn btn-secondary">Сбросить</a>
+        </div>
+    </form>
+
     <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
         {% if items %}
             {% for item in items %}
@@ -22,6 +49,8 @@
                             <p class="card-text text-muted flex-grow-1">
                                 {{ item.description|truncatechars:80 }}
                             </p>
+                            <p class="mb-1"><b>📍 Локация:</b> {{ item.country }}, {{ item.city }}</p>
+                            <p class="mb-1"><b>📂 Категория:</b> {{ item.category.name }}</p>
                             <p class="text-end">
                                 <small class="text-muted">👤 Добавил: <b>{{ item.user.username }}</b></small>
                             </p>
@@ -41,8 +70,8 @@
 <!-- Стили для карточек -->
 <style>
     .card {
-        max-width: 320px; /* Чуть больше карточка */
-        min-height: 380px; /* Все карточки одной высоты */
+        max-width: 320px;
+        min-height: 400px;
         transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     }
 
@@ -52,12 +81,12 @@
     }
 
     .card-img-top {
-        height: 220px; /* Увеличенная высота */
-        object-fit: contain; /* Полностью вмещает картинку */
+        height: 220px;
+        object-fit: contain;
         border-top-left-radius: 10px;
         border-top-right-radius: 10px;
-        background-color: #f8f9fa; /* Нейтральный фон, если картинка не заполняет */
-        padding: 5px; /* Отступ, чтобы не было сжатия */
+        background-color: #f8f9fa;
+        padding: 5px;
     }
 </style>
 

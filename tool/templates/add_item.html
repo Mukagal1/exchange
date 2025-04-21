@@ -7,32 +7,36 @@
         
         <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
             {% csrf_token %}
-
+        
             <!-- Название -->
             <div class="mb-3">
                 <label class="form-label fw-semibold">📌 Название вещи</label>
                 {{ form.name }}
             </div>
-
+        
             <!-- Описание -->
             <div class="mb-3">
                 <label class="form-label fw-semibold">📝 Описание</label>
                 {{ form.description }}
             </div>
-
+        
+            <!-- Категория -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">📂 Категория</label>
+                {{ form.category }}
+            </div>
+        
             <!-- Фото -->
             <div class="mb-3">
                 <label class="form-label fw-semibold">📷 Фото</label>
-                <div class="custom-file">
-                    <input type="file" class="custom-file-input form-control" id="fileInput" name="{{ form.image.name }}">
-                </div>
+                {{ form.image }}
             </div>
-
+        
             <!-- Кнопки -->
             <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow">
                 <i class="bi bi-check-circle"></i> Добавить
             </button>
-
+        
             <a href="{% url 'myitems' %}" class="btn btn-secondary w-100 mt-2 py-2 fw-bold shadow">
                 <i class="bi bi-arrow-left"></i> Назад
             </a>

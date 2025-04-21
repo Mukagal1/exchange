@@ -1,0 +1,60 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4 text-primary fw-bold">👤 Мой профиль</h2>
+
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body">
+            <h5 class="card-title text-center fw-bold text-secondary">Информация о пользователе</h5>
+            <hr>
+            <div class="row mb-3">
+                <div class="col-6 text-end fw-bold">Имя пользователя:</div>
+                <div class="col-6 text-start">{{ profile.user.username }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-6 text-end fw-bold">Email:</div>
+                <div class="col-6 text-start">{{ profile.user.email }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-6 text-end fw-bold">Город:</div>
+                <div class="col-6 text-start">{{ profile.city|default:"Не указан" }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-6 text-end fw-bold">Страна:</div>
+                <div class="col-6 text-start">{{ profile.country|default:"Не указана" }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-6 text-end fw-bold">Широта:</div>
+                <div class="col-6 text-start">{{ profile.latitude|default:"Не указана" }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-6 text-end fw-bold">Долгота:</div>
+                <div class="col-6 text-start">{{ profile.longitude|default:"Не указана" }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        max-width: 700px;
+        margin: 0 auto;
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .rounded-circle {
+        border: 3px solid #0d6efd;
+    }
+
+    hr {
+        border-top: 2px solid #e9ecef;
+    }
+</style>
+{% endblock %}

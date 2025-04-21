@@ -4,11 +4,12 @@ from .models import Item
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        fields = ['name', 'description', 'image']
+        fields = ['name', 'description', 'image', 'category']
         labels = {
             'name': 'Название',
             'description': 'Описание',
-            'image': 'Изображение'
+            'image': 'Изображение',
+            'category': 'Категория',
         }
 
 class ExchangeRequestForm(forms.Form):

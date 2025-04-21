@@ -1,0 +1,73 @@
+{% extends "main.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-5 text-center display-5 fw-bold text-gradient">💬 Чаты</h1>
+
+    <div class="row g-4">
+        <!-- Ваши чаты -->
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <i class="bi bi-chat-dots me-2 fs-4"></i>
+                    <h5 class="mb-0">Ваши чаты</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for chat in user_chats %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="{% url 'group_chat_detail' chat.id %}" class="text-decoration-none fw-medium text-dark hover-link">
+                                {{ chat.name }}
+                            </a>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-center text-muted">Вы пока не участвуете в чатах.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Доступные чаты -->
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-success text-white d-flex align-items-center">
+                    <i class="bi bi-chat me-2 fs-4"></i>
+                    <h5 class="mb-0">Доступные чаты</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for chat in available_chats %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="fw-medium">{{ chat.name }}</span>
+                            <a href="{% url 'join_group_chat' chat.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-box-arrow-in-right"></i> Присоединиться
+                            </a>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-center text-muted">Нет доступных чатов.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка создать -->
+    <div class="mt-5 d-flex justify-content-center">
+        <a href="{% url 'create_group_chat' %}" class="btn btn-lg btn-primary px-4">
+            <i class="bi bi-plus-circle"></i> Создать новый чат
+        </a>
+    </div>
+</div>
+
+<!-- Custom hover effect -->
+<style>
+    .hover-link:hover {
+        text-decoration: underline;
+        color: #0d6efd;
+        transition: 0.2s;
+    }
+    .text-gradient {
+        background: linear-gradient(45deg, #0d6efd, #198754);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+</style>
+{% endblock %}

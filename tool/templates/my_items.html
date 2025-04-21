@@ -30,6 +30,8 @@
                         <p class="card-text text-muted flex-grow-1">
                             {{ item.description|truncatechars:80 }}
                         </p>
+                        <p class="mb-1"><b>📍 Локация:</b> {{ item.country }}, {{ item.city }}</p>
+                        <p class="mb-1"><b>📂 Категория:</b> {{ item.category.name }}</p>
                         <p class="text-end">
                             <small class="text-muted">📅 {{ item.created_at|date:"d.m.Y" }}</small>
                         </p>

@@ -5,9 +5,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 import json
 from django.http import JsonResponse, HttpResponseBadRequest
-from .models import Item, ExchangeRequest, Notification
+from .models import Item, ExchangeRequest, Notification, Category, UserProfile
 from .forms import ItemForm, ExchangeRequestForm
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from .models import GroupChat, GroupMessage
+
+
+from .models import UserProfile
+from .utils import get_client_ip_address, get_location_by_ip
 
 def index(request):
     return render(request, "index.html")
@@ -52,12 +58,29 @@ def signup(request):
             if User.objects.filter(username=username).exists():
                 return JsonResponse({"error": "Имя пользователя уже занято"}, status=400)
 
-            User.objects.create_user(username=username, email=email, password=password)
+            user = User.objects.create_user(username=username, email=email, password=password)
+
+            ip = get_client_ip_address(request)
+            location = get_location_by_ip(ip)
+
+            print(f"User IP: {ip}")
+            print(f"User Location: {location}")
+
+            UserProfile.objects.update_or_create(
+                user=user,
+                defaults={
+                    "city": location.get('city') or "Unknown",
+                    "country": location.get('country') or "Unknown",
+                    "latitude": location.get('lat') or 0.0,
+                    "longitude": location.get('lon') or 0.0,
+                }
+            )
+
             return JsonResponse({"message": "Регистрация успешна"}, status=201)
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Ошибка обработки JSON"}, status=400)
-    
+
     return render(request, "signup.html")
 
 
@@ -96,6 +119,10 @@ def add_item(request):
         if form.is_valid():
             item = form.save(commit=False)
             item.user = request.user  # Привязываем вещь к пользователю
+
+            user_profile = request.user.profile
+            item.city = user_profile.city
+            item.country = user_profile.country
             item.save()
             return redirect("myitems")
     else:
@@ -162,3 +189,80 @@ def decline_exchange(request, request_id):
         exchange_request.save()
         return JsonResponse({"success": True})
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+
+@login_required
+@csrf_exempt
+def profile(request):
+    profile = UserProfile.objects.get(user=request.user)
+    return render(request, "profile.html", {"profile": profile})
+
+
+@login_required
+def place(request):
+    items = Item.objects.all()
+    query = request.GET.get('q', '')
+    category = request.GET.get('category', '')
+    city = request.GET.get('city', '')
+    country = request.GET.get('country', '')
+
+    # Фильтрация
+    if query:
+        items = items.filter(name__icontains=query)
+    if category:
+        items = items.filter(category__id=category)
+    if city:
+        items = items.filter(city__icontains=city)
+    if country:
+        items = items.filter(country__icontains=country)
+
+    categories = Category.objects.all()  # Для отображения категорий в фильтре
+    return render(request, "place.html", {"items": items, "categories": categories})
+
+@login_required
+def group_chats(request):
+    """Список чатов: ваши чаты и доступные чаты"""
+    user_chats = GroupChat.objects.filter(members=request.user)  # Чаты, где пользователь участник
+    available_chats = GroupChat.objects.exclude(members=request.user)  # Чаты, где пользователь не участник
+    return render(request, "group_chats.html", {"user_chats": user_chats, "available_chats": available_chats})
+
+
+@login_required
+def group_chat_detail(request, chat_id):
+    """Детали конкретного чата"""
+    chat = get_object_or_404(GroupChat, id=chat_id)
+    
+    # Если пользователь не участник, добавляем его в чат
+    if request.user not in chat.members.all():
+        chat.members.add(request.user)
+
+    # Получаем сообщения чата
+    messages = chat.messages.all().order_by("created_at")
+
+    # Обрабатываем отправку сообщения
+    if request.method == "POST":
+        content = request.POST.get("content")
+        if content:
+            GroupMessage.objects.create(chat=chat, sender=request.user, content=content)
+            return redirect("group_chat_detail", chat_id=chat.id)
+
+    return render(request, "group_chat_detail.html", {"chat": chat, "messages": messages})
+
+
+@login_required
+def join_group_chat(request, chat_id):
+    """Присоединение к чату"""
+    chat = get_object_or_404(GroupChat, id=chat_id)
+    chat.members.add(request.user)
+    return redirect("group_chat_detail", chat_id=chat.id)
+
+
+@login_required
+def create_group_chat(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description')  # Получаем описание
+        chat = GroupChat.objects.create(name=name, description=description)
+        chat.members.add(request.user)  # Добавляем создателя в участники
+        return redirect('group_chats')  # Перенаправление на список чатов
+    return render(request, 'create_group_chat.html')

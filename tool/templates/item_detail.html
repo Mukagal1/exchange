@@ -18,7 +18,9 @@
                 <div>
                     <h2 class="fw-bold text-primary">{{ item.name }}</h2>
                     <p class="text-muted">{{ item.description }}</p>
-                    <p><b>Категория:</b> {{ item.category }}</p>
+                    <p><b>📂 Категория:</b> {{ item.category.name }}</p>
+                    <p><b>📍 Город:</b> {{ item.city }}</p>
+                    <p><b>🌍 Страна:</b> {{ item.country }}</p>
                     <p><b>Добавил:</b> <span class="text-primary fw-bold">{{ item.user.username }}</span></p>
                     <p><b>Дата добавления:</b> {{ item.created_at|date:"d.m.Y" }}</p>
                 </div>

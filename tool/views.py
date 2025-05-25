@@ -71,6 +71,7 @@ def signup(request):
                 defaults={
                     "city": location.get('city') or "Unknown",
                     "country": location.get('country') or "Unknown",
+                    "region": location.get('region') or "Unknown",
                     "latitude": location.get('lat') or 0.0,
                     "longitude": location.get('lon') or 0.0,
                 }
@@ -110,6 +111,15 @@ def item_detail(request, item_id):
 def my_items(request):
     items = Item.objects.filter(user=request.user)
     return render(request, "my_items.html", {"items": items})
+
+from django.contrib import messages
+
+@login_required
+def delete_item(request, item_id):
+    item = get_object_or_404(Item, id=item_id, user=request.user)
+    item.delete()
+    messages.success(request, "Вещь успешно удалена.")
+    return redirect("myitems")
 
 @login_required
 def add_item(request):
@@ -196,6 +206,29 @@ def decline_exchange(request, request_id):
 def profile(request):
     profile = UserProfile.objects.get(user=request.user)
     return render(request, "profile.html", {"profile": profile})
+
+
+@login_required
+def edit_profile(request):
+    profile = request.user.profile
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+    else:
+        form = ProfileForm(instance=profile)
+
+    return render(request, 'edit_profile.html', {'form': form})
+
+@login_required
+def update_avatar(request):
+    if request.method == 'POST':
+        profile = request.user.profile
+        if 'image' in request.FILES:
+            profile.image = request.FILES['image']
+            profile.save()
+    return redirect('profile')
 
 
 @login_required

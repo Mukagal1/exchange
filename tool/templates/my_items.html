@@ -30,11 +30,18 @@
                         <p class="card-text text-muted flex-grow-1">
                             {{ item.description|truncatechars:80 }}
                         </p>
-                        <p class="mb-1"><b>📍 Локация:</b> {{ item.country }}, {{ item.city }}</p>
+                        <p class="mb-1"><b>📍 Локация:</b> {{ item.city }}, {{ item.region }}</p>
                         <p class="mb-1"><b>📂 Категория:</b> {{ item.category.name }}</p>
                         <p class="text-end">
                             <small class="text-muted">📅 {{ item.created_at|date:"d.m.Y" }}</small>
                         </p>
+                        <form method="POST" action="{% url 'delete_item' item.id %}" class="mt-2 text-end">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Удалить эту вещь?');">
+                                🗑️ Удалить
+                            </button>
+                        </form>
+
                     </div>
                 </div>
             </div>

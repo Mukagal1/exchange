@@ -1,5 +1,5 @@
 from django import forms
-from .models import Item
+from .models import Item, UserProfile
 
 class ItemForm(forms.ModelForm):
     class Meta:
@@ -20,3 +20,8 @@ class ExchangeRequestForm(forms.Form):
         super().__init__(*args, **kwargs)
         if user:
             self.fields['from_item'].queryset = Item.objects.filter(user=user)
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['image', 'city', 'country', 'latitude', 'longitude']

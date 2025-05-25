@@ -1,0 +1,15 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Редактировать профиль</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-primary mt-3">Сохранить</button>
+    </form>
+</div>
+{% endblock %}

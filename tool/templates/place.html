@@ -23,7 +23,7 @@
             <input type="text" name="city" class="form-control" placeholder="🏙 Город" value="{{ request.GET.city }}">
         </div>
         <div class="col-md-3">
-            <input type="text" name="country" class="form-control" placeholder="🌍 Страна" value="{{ request.GET.country }}">
+            <input type="text" name="region" class="form-control" placeholder="🌍 Регион" value="{{ request.GET.region }}">
         </div>
         <div class="col-md-12 text-end">
             <button type="submit" class="btn btn-primary">Применить фильтры</button>
@@ -49,7 +49,7 @@
                             <p class="card-text text-muted flex-grow-1">
                                 {{ item.description|truncatechars:80 }}
                             </p>
-                            <p class="mb-1"><b>📍 Локация:</b> {{ item.country }}, {{ item.city }}</p>
+                            <p class="mb-1"><b>📍 Локация:</b> {{ item.city }}, {{ item.region }}</p>
                             <p class="mb-1"><b>📂 Категория:</b> {{ item.category.name }}</p>
                             <p class="text-end">
                                 <small class="text-muted">👤 Добавил: <b>{{ item.user.username }}</b></small>

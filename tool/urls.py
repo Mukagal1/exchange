@@ -42,6 +42,7 @@ urlpatterns = [
     path('place/', views.place, name='place'),
     path("chats/", views.group_chats, name="group_chats"),
     path("chats/<int:chat_id>/", views.group_chat_detail, name="group_chat_detail"),
+    path("chat/<int:chat_id>/", views.chat_detail, name="chat_detail"),
     path("chats/<int:chat_id>/join/", views.join_group_chat, name="join_group_chat"),
     path("chats/create/", views.create_group_chat, name="create_group_chat"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

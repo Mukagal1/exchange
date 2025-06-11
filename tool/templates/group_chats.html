@@ -3,6 +3,28 @@
 {% block content %}
 <div class="container mt-5">
     <h1 class="mb-5 text-center display-5 fw-bold text-gradient">💬 Чаты</h1>
+    
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark d-flex align-items-center">
+                    <i class="bi bi-person-lines-fill me-2 fs-4"></i>
+                    <h5 class="mb-0">Приватные чаты</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for chat in private_chats %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="{% url 'chat_detail' chat.id %}" class="text-decoration-none fw-medium text-dark hover-link">
+                                {{ chat.name }}
+                            </a>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-center text-muted">У вас пока нет приватных чатов.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
 
     <div class="row g-4">
         <!-- Ваши чаты -->

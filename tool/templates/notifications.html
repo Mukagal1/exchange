@@ -4,29 +4,26 @@
 <div class="container mt-4">
     <h1 class="mb-4 text-center">📢 Уведомления</h1>
 
-    {% if notifications %}
+    <!-- Блок заявок на обмен -->
+    <h4 class="mb-3">Заявки на обмен</h4>
+    {% if exchange_requests %}
         <div class="notification-list">
-            {% for request in notifications %}
+            {% for request in exchange_requests %}
                 <div class="card notification-card shadow-sm mb-3" data-id="{{ request.id }}">
                     <div class="card-body">
                         <h5 class="card-title">🔄 Обмен вещей</h5>
-
                         <div class="d-flex align-items-center justify-content-center mt-3">
                             <div class="text-center me-3">
                                 <img src="{{ request.to_item.image.url }}" alt="Ваша вещь" class="img-fluid rounded item-image">
                                 <p class="small mt-2 text-muted">{{ request.to_item.name }}</p>
                             </div>
-
                             <div class="mx-3 swap-icon">⇄</div>
-
                             <div class="text-center ms-3">
                                 <img src="{{ request.from_item.image.url }}" alt="Предложенная вещь" class="img-fluid rounded item-image">
                                 <p class="small mt-2 text-muted">{{ request.from_item.name }}</p>
                             </div>
                         </div>
-
                         <p class="text-muted mt-3 text-center">От <strong>{{ request.from_user.username }}</strong></p>
-
                         <div class="d-flex justify-content-center mt-3">
                             <button class="btn btn-success accept-btn me-2" data-id="{{ request.id }}">✅ Принять</button>
                             <button class="btn btn-danger reject-btn" data-id="{{ request.id }}">❌ Отклонить</button>
@@ -36,11 +33,59 @@
             {% endfor %}
         </div>
     {% else %}
-        <p class="text-muted text-center">📭 У вас пока нет уведомлений.</p>
+        <p class="text-muted text-center">📭 Нет новых заявок на обмен.</p>
     {% endif %}
+
+    <!-- Блок уведомлений о событиях -->
+    <!-- Блок уведомлений о событиях -->
+<h4 class="mb-3 mt-5">Другие уведомления</h4>
+{% if notifications %}
+    <div class="notification-list">
+        {% for note in notifications %}
+            <div class="notification-item mb-3 
+                {% if note.is_read %}accepted{% else %}declined{% endif %}
+            ">
+                <div class="icon">
+                    {% if note.is_read %}
+                        ✅
+                    {% else %}
+                        ❌
+                    {% endif %}
+                </div>
+                <div class="info">
+                    <div class="status">
+                        {% if note.is_read %}
+                            Ваше предложение принято
+                        {% else %}
+                            Ваше предложение отклонено
+                        {% endif %}
+                    </div>
+                    <div class="details small text-muted">
+                        {{ note.from_item }} ⇄ {{ note.to_item }}
+                        {% if note.sender %}
+                            от {{ note.sender.username }}
+                        {% endif %}
+                    </div>
+                    <div class="time small text-muted">
+                        {{ note.created_at|date:"d.m.Y H:i" }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+    </div>
+{% else %}
+    <p class="text-muted text-center">Нет других уведомлений.</p>
+{% endif %}
 </div>
 
 <script>
+    fetch("{% url 'mark_notifications_as_read' %}", {credentials: "same-origin"})
+        .then(() => {
+            // Можно сразу обновить счетчик на фронте
+            const countBadge = document.getElementById("notification-count");
+            if (countBadge) countBadge.style.display = "none";
+        });
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".accept-btn").forEach(button => {
             button.addEventListener("click", function () {
@@ -67,9 +112,13 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const card = button.closest(".notification-card");
-                    card.classList.add("fade-out");
-                    setTimeout(() => card.remove(), 300);
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        const card = button.closest(".notification-card");
+                        card.classList.add("fade-out");
+                        setTimeout(() => card.remove(), 300);
+                    }
                 } else {
                     alert("Ошибка: " + data.error);
                 }
@@ -86,6 +135,7 @@
 </script>
 
 <style>
+    
     .notification-list {
         display: flex;
         flex-direction: column;
@@ -158,6 +208,56 @@
     .text-muted {
         font-size: 15px;
     }
+    .notification-item {
+        display: flex;
+        align-items: flex-start;
+        background: #fff;
+        border-radius: 10px;
+        padding: 15px 18px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        transition: 0.2s ease;
+        width: 100%;
+        max-width: 700px;
+    }
+
+    .notification-item .icon {
+        font-size: 24px;
+        margin-right: 15px;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    .notification-item .info {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .notification-item .status {
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 4px;
+        color: #212529;
+    }
+
+    .notification-item .details {
+        font-size: 14px;
+    }
+
+    .notification-item .time {
+        font-size: 13px;
+        margin-top: 4px;
+        color: #999;
+    }
+
+    .notification-item.accepted {
+        border-left: 5px solid #28a745;
+    }
+
+    .notification-item.declined {
+        border-left: 5px solid #dc3545;
+    }
+
 </style>
 
 {% endblock %}

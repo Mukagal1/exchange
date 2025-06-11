@@ -9,7 +9,7 @@ from .models import Item, ExchangeRequest, Notification, Category, UserProfile
 from .forms import ItemForm, ExchangeRequestForm
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from .models import GroupChat, GroupMessage
+from .models import GroupChat, GroupMessage, Chat, Message
 
 
 from .models import UserProfile
@@ -167,18 +167,30 @@ def offer_exchange(request, item_id):
 @login_required
 def notifications(request):
     exchange_requests = ExchangeRequest.objects.filter(to_user=request.user, status="pending").order_by('-created_at')
-    print(exchange_requests)
-    return render(request, "notifications.html", {"notifications": exchange_requests})
+    notifications = Notification.objects.filter(user=request.user).order_by('-id')
+    return render(
+        request,
+        "notifications.html",
+        {
+            "exchange_requests": exchange_requests,
+            "notifications": notifications,
+        }
+    )
 
 @login_required
 def mark_notifications_as_read(request):
     ExchangeRequest.objects.filter(to_user=request.user, status="pending").update(status="viewed")
-    return redirect("notifications")
+    Notification.objects.filter(user=request.user, is_seen=False).update(is_seen=True)
+    return JsonResponse({"success": True})
 
 @login_required
 def unread_notifications_count(request):
-    count = ExchangeRequest.objects.filter(to_user=request.user, status="pending").count()
-    return JsonResponse({"count": count})
+    exchange_count = ExchangeRequest.objects.filter(to_user=request.user, status="pending").count()
+    notification_count = Notification.objects.filter(user=request.user, is_seen=False).count()
+    total_count = exchange_count + notification_count
+    return JsonResponse({"count": total_count})
+
+from django.urls import reverse
 
 @login_required
 @csrf_exempt
@@ -187,8 +199,39 @@ def accept_exchange(request, request_id):
         exchange_request = get_object_or_404(ExchangeRequest, id=request_id, to_user=request.user)
         exchange_request.status = "accepted"
         exchange_request.save()
-        return JsonResponse({"success": True})
+
+        # Найти или создать чат между пользователями
+        chat = Chat.objects.filter(members=exchange_request.from_user).filter(members=exchange_request.to_user).first()
+        if not chat:
+            chat = Chat.objects.create(name=f"Чат {exchange_request.from_user.username} и {exchange_request.to_user.username}")
+            chat.members.add(exchange_request.from_user, exchange_request.to_user)
+
+        # Отправить уведомление отправителю
+        Notification.objects.create(
+            user=exchange_request.from_user,
+            sender=request.user,
+            from_item=exchange_request.from_item.name,
+            to_item=exchange_request.to_item.name,
+            is_read=True,
+        )
+
+        # Вернуть URL для перехода в чат
+        chat_url = reverse('chat_detail', args=[chat.id])
+        return JsonResponse({"success": True, "redirect_url": chat_url})
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+@login_required
+def chat_detail(request, chat_id):
+    chat = get_object_or_404(Chat, id=chat_id)
+    if request.user not in chat.members.all():
+        return redirect('main_page')
+    messages = chat.messages.all().order_by("created_at")
+    if request.method == "POST":
+        content = request.POST.get("content")
+        if content:
+            Message.objects.create(chat=chat, sender=request.user, content=content)
+            return redirect("chat_detail", chat_id=chat.id)
+    return render(request, "chat_detail.html", {"chat": chat, "messages": messages})
 
 @login_required
 @csrf_exempt
@@ -197,6 +240,16 @@ def decline_exchange(request, request_id):
         exchange_request = get_object_or_404(ExchangeRequest, id=request_id, to_user=request.user)
         exchange_request.status = "declined"
         exchange_request.save()
+
+        # Отправить уведомление отправителю
+        Notification.objects.create(
+            user=exchange_request.from_user,
+            sender=request.user,
+            from_item=exchange_request.from_item.name,
+            to_item=exchange_request.to_item.name,
+            is_read=False,
+        )
+
         return JsonResponse({"success": True})
     return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
@@ -254,11 +307,19 @@ def place(request):
 
 @login_required
 def group_chats(request):
-    """Список чатов: ваши чаты и доступные чаты"""
-    user_chats = GroupChat.objects.filter(members=request.user)  # Чаты, где пользователь участник
-    available_chats = GroupChat.objects.exclude(members=request.user)  # Чаты, где пользователь не участник
-    return render(request, "group_chats.html", {"user_chats": user_chats, "available_chats": available_chats})
-
+    """Список чатов: ваши групповые и приватные чаты"""
+    user_chats = GroupChat.objects.filter(members=request.user)  # Групповые чаты
+    available_chats = GroupChat.objects.exclude(members=request.user)  # Доступные групповые чаты
+    private_chats = Chat.objects.filter(members=request.user)  # Приватные чаты (один на один)
+    return render(
+        request,
+        "group_chats.html",
+        {
+            "user_chats": user_chats,
+            "available_chats": available_chats,
+            "private_chats": private_chats,
+        }
+    )
 
 @login_required
 def group_chat_detail(request, chat_id):

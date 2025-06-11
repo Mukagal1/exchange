@@ -2,35 +2,8 @@
 
 {% block content %}
 <style>
-    .chat-wrapper {
-        max-width: 800px;
-        margin: auto;
-    }
-
-    .chat-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-    }
-
-    .chat-header h2 {
-        margin: 0 auto;
-        font-size: 1.5rem;
-        font-weight: bold;
-    }
-
-    .chat-back {
-        font-size: 0.95rem;
-        text-decoration: none;
-        color: #198754;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
     .chat-container {
-        height: 65vh;
+        height: 70vh;
         overflow-y: auto;
         background-color: #f4f6f9;
         border-radius: 12px;
@@ -46,6 +19,7 @@
         padding: 0.75rem 1rem;
         border-radius: 16px;
         word-wrap: break-word;
+        position: relative;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     }
 
@@ -78,7 +52,7 @@
 
     .message-row {
         display: flex;
-        align-items: flex-start;
+        align-items: flex-end;
     }
 
     .message-row-right {
@@ -91,26 +65,18 @@
         gap: 0.25rem;
     }
 
-    .message-username {
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: #495057;
-        margin-bottom: 2px;
-    }
-
     textarea.form-control {
         resize: none;
         border-radius: 12px;
     }
 
-    .chat-form {
+    .form-footer {
         background: white;
         padding: 1rem;
         border-top: 1px solid #dee2e6;
-        border-radius: 0 0 12px 12px;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
     }
 
     .btn-send {
@@ -118,7 +84,39 @@
         padding: 0.5rem 1rem;
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 0.5rem;
+        transition: background-color 0.2s ease;
+    }
+
+    .btn-send i {
+        font-size: 1.2rem;
+    }
+
+    .btn-send:hover {
+        background-color: #198754cc;
+    }
+
+    .chat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .btn-back {
+        border: none;
+        background: none;
+        font-size: 1rem;
+        color: #198754;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        text-decoration: none;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .btn-back:hover {
+        text-decoration: underline;
     }
 
     @media (max-width: 576px) {
@@ -126,15 +124,21 @@
             max-width: 90%;
         }
     }
+
+    .dropdown-menu.show:empty,
+    div[style*="position: absolute"]:empty {
+        display: none !important;
+    }
+
 </style>
 
-<div class="container mt-4 chat-wrapper">
+<div class="container mt-4">
     <div class="chat-header">
-        <a href="{% url 'group_chats' %}" class="chat-back">
+        <a href="{% url 'group_chats' %}" class="btn-back">
             <i class="bi bi-arrow-left"></i> Назад
         </a>
-        <h2>{{ chat.name }}</h2>
-        <div style="width: 50px;"></div>
+        <h4 class="mb-0 text-center w-100">{{ chat.name }}</h4>
+        <div style="width: 60px;"></div> <!-- Заглушка для симметрии -->
     </div>
 
     <div class="chat-container" id="message-container">
@@ -153,7 +157,7 @@
                     <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
                          class="chat-avatar" alt="{{ message.sender.username }}">
                     <div class="message-content">
-                        <div class="message-username">{{ message.sender.username }}</div>
+                        <strong>{{ message.sender.username }}</strong>
                         <div class="chat-message message-left">
                             {{ message.content }}
                             <div class="message-meta">
@@ -168,9 +172,9 @@
         {% endfor %}
     </div>
 
-    <form method="post" class="chat-form shadow-sm">
+    <form method="post" class="form-footer d-flex shadow-sm rounded-top">
         {% csrf_token %}
-        <textarea name="content" class="form-control" placeholder="Введите сообщение..." rows="1" required></textarea>
+        <textarea name="content" class="form-control me-2" placeholder="Введите сообщение..." rows="1" autofocus required></textarea>
         <button type="submit" class="btn btn-success btn-send">
             <i class="bi bi-send-fill"></i>
         </button>

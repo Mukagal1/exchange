@@ -71,7 +71,7 @@
     </style>
 </head>
 <body>
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    {% comment %} <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055;">
         {% for message in messages %}
         <div class="toast align-items-center text-white bg-{{ message.tags }} border-0 show" role="alert">
             <div class="d-flex">
@@ -82,7 +82,7 @@
             </div>
         </div>
         {% endfor %}
-    </div>
+    </div> {% endcomment %}
     <div class="sidebar">
         <h3>Меню</h3>
         <a href="{% url 'notifications' %}" class="nav-link d-flex justify-content-between align-items-center">
